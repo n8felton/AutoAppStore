@@ -113,14 +113,14 @@ for id in $($PBUDDY -c "Print appIDs" "$appsPlist"); do
 done
 
 # warn about running the first time
-if [[ "$(ls -a "$Completed" )" ]]; then
+if [ ! "$(ls -A "$Completed" | grep -v ".DS_Store")" ]; then
 	echo "################################################"
 	echo "The completed directory is empty"
 	echo "I suspect you've never run this script before"
 	echo "If you wish to force an install of all apps,"
-	echo "rather than just the ones of out date"
+	echo "rather than just the ones out of date"
 	echo "Then run this script with the parameter: force"
-	echo "Example: ./$0 force"
+	echo "Example: $0 force"
 	echo "################################################"
 	
 fi
