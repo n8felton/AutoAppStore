@@ -11,7 +11,15 @@ Basic Overview of steps:
 
 1. Login to App Store, Turn off Automatic Updates
 
-2. Run appStoreExtract.sh
+2. Create Plist of App IDs you want downloaded
+
+.../usr/libexec/PlistBuddy -c "Set appIDs 425424353 803453959" ./AutoAppStore.plist
+
+Example Apps:
+    803453959 = Slack
+    425424353 = The Unarchiver
+
+3. Run appStoreExtract.sh
 
 The script then...
 
@@ -40,4 +48,4 @@ https://github.com/argon/mas
 
 ...Moves older versions of packages from completed to outdated
 
-3. Profit? Ideally, we'll link this with AutoPkg
+4. Profit? Ideally, we'll link this with AutoPkg
