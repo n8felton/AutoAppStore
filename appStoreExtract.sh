@@ -62,6 +62,8 @@ appsPlist="AutoAppStore.plist"
 # PlistBuddy -c "Set appIDs 123456789 123456789 123456789 123456789"
 # wehre each 123456789 is a different App ID
 
+# let the user force a download of all apps
+forceInstall="$1"
 
 # Let users switch to munki naming convention by using -m as first argument to this script
 separator="_"
@@ -90,7 +92,19 @@ if [[ -e "$mas" ]]; then
 	fi
 fi
 
+
 unset AppStoreIDs
+
+if [[ ! -e "$appsPlist" ]]; then
+	echo "   ERROR: Could not find plist with App IDs!"
+	echo "   Please create a $appsPlist to store the"
+	echo "   App Store App IDs you wish to download."
+	echo "   Example:"
+	echo "   803453959 = Slack"
+	echo "   425424353 = The Unarchiver"
+	echo "   /usr/libexec/PlistBuddy -c \"Set appIDs 425424353 803453959\" ./$appsPlist"
+	exit 1
+fi
 
 for id in $($PBUDDY -c "Print appIDs" "$appsPlist"); do 
 	if [[ $id =~ [0-9] ]]; then 
@@ -98,14 +112,29 @@ for id in $($PBUDDY -c "Print appIDs" "$appsPlist"); do
 	fi
 done
 
+# warn about running the first time
+if [[ "$(ls -a "$Completed" )" ]]; then
+	echo "################################################"
+	echo "The completed directory is empty"
+	echo "I suspect you've never run this script before"
+	echo "If you wish to force an install of all apps,"
+	echo "rather than just the ones of out date"
+	echo "Then run this script with the parameter: force"
+	echo "Example: ./$0 force"
+	echo "################################################"
+	
+fi
+
 echo "Processing ${#AppStoreIDs[@]} apps..."
 
-# outdatedApps=$($mas outdated)
-outdatedApps="497799835 Xcode (7.0)
-446107677 Screens VNC - Access Your Computer From Anywhere (3.6.7)
-425424353 The Unarchiver (3.3.3)
-803453959 Slack (2.0)
-715768417 Something"
+# get outdated apps from mas
+outdatedApps=$($mas outdated)
+
+# outdatedApps="497799835 Xcode (7.0)
+# 446107677 Screens VNC - Access Your Computer From Anywhere (3.6.7)
+# 425424353 The Unarchiver (3.3.3)
+# 803453959 Slack (2.0)
+# 715768417 Something"
 
 function capturePkgs () {
 	echo "   ->Watching for Pkgs"
@@ -139,7 +168,7 @@ for appId in "${AppStoreIDs[@]}"; do
 			outdatedApp=true
 		fi
 	done
-	if [[ $outdatedApp == "true" ]]; then
+	if [[ $outdatedApp == "true" || "$forceInstall" == "force" ]]; then
 		echo "   Mac App \"$currAppName\" is outdated"
 		watchPID=""
 		capturePkgs
